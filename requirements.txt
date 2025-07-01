@@ -1,0 +1,4 @@
+bcrypt
+mysql-connector-python
+flask
+flask_mail
