@@ -29,6 +29,10 @@ app.config["MAIL_USE_SSL"] = False
 
 mail = Mail(app)
 
+@app.route("/", methods=["GET", "POST"])
+def home():
+    return redirect(url_for('index'))
+
 @app.route("/ViesuSaraksts", methods=["GET", "POST"])
 def index():
     mydb = mysql.connector.connect(
@@ -219,4 +223,5 @@ def sendVerificationEmail(email, verificationKey):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
+    debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+    app.run(debug=debug_mode, host="0.0.0.0", port=8080, use_reloader=debug_mode)

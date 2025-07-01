@@ -7,21 +7,21 @@ services:
       - '8080:8080'
     environment:
       PORT: 8080
+      FLASK_ENV: production
+      FLASK_DEBUG: 'False'
     depends_on:
       - database
+
   database:
     image: "mysql"
-    ports:
-      - '3307:3306'
-    expose:
-      - '3306'
     environment:
       MYSQL_ROOT_PASSWORD: Kraujinieks123
       MYSQL_DATABASE: db
-      MYSQL_USER: user # Where our data will be persisted
+      MYSQL_USER: user
+      MYSQL_PASSWORD: userpass
     volumes:
       - my-db:/var/lib/mysql
       - ./db_seed.sql:/docker-entrypoint-initdb.d/01-seed.sql
-# Names our volume
+
 volumes:
   my-db:
