@@ -3,6 +3,7 @@ version: '3.8'
 services:
   web:
     build: .
+    env_file: .env # This line is not really needed because I am populating the environment variables directly in the py file (but copilot really wants me to do this)
     ports:
       - '8080:8080'
     environment:
@@ -18,7 +19,8 @@ services:
     depends_on:
       database:
         condition: service_healthy
-
+    labels:
+      - "promtail=true"
   database:
     image: "mysql"
     environment:
@@ -34,7 +36,27 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-      # start_period: 30s
+      # start_period: 30s what the helly is this?
+    restart: unless-stopped
+
+  loki:
+    image: grafana/loki:2.9.0
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./loki/loki-config.yaml:/etc/loki/local-config.yaml
+    restart: unless-stopped
+
+  promtail:
+    image: grafana/promtail:2.9.0
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./loki/promtail-config.yaml:/etc/promtail/config.yml
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
     restart: unless-stopped
 
 volumes:

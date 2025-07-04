@@ -10,18 +10,21 @@ from flask import Flask, render_template, json, request, redirect, url_for, sess
 from flask_mail import Mail, Message
 from mysql.connector.errors import IntegrityError
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 
-app.secret_key = "dasflkasdfljasdf"
+app.secret_key = os.getenv("SECRET_KEY")
 
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_SERVER'] = os.getenv("MAIL_SERVER")
 
-app.config['MAIL_PORT'] = 587
+app.config['MAIL_PORT'] = int(os.getenv("MAIL_PORT"))
 
-app.config['MAIL_USERNAME'] = 'krauja03@gmail.com'
+app.config['MAIL_USERNAME'] = os.getenv("MAIL_USERNAME")
 
-app.config['MAIL_PASSWORD'] = 'lptw tovi pzej vglg'
+app.config['MAIL_PASSWORD'] = os.getenv("MAIL_PASSWORD")
 
 app.config['MAIL_USE_TLS'] = True
 
@@ -211,7 +214,7 @@ def verify():
 
 def sendVerificationEmail(email, verificationKey):
     try:
-        messageBody = "Verify e-mail address using this link: https://reiniskr1.pythonanywhere.com/verify?token="
+        messageBody = "Verify e-mail address using this link: http://localhost:8080/verify?token="
         msg = Message("Email address verification", sender="krauja03@gmail.com", recipients=[email])
         msg.body = messageBody + verificationKey + " \n This link is valid for 2 weeks."
         mail.send(msg)
