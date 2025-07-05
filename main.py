@@ -32,19 +32,35 @@ app.config["MAIL_USE_SSL"] = False
 
 mail = Mail(app)
 
+
+def connect_to_db():
+    return mysql.connector.connect(
+        host=os.getenv("DATABASE_HOST"),
+        port=os.getenv("DATABASE_PORT"),
+        user=os.getenv("DATABASE_ROOT_USERNAME"),
+        passwd=os.getenv("DATABASE_ROOT_PASSWORD"),
+        database=os.getenv("DATABASE_NAME")
+    )
+    
+def sendVerificationEmail(email, verificationKey):
+    try:
+        messageBody = "Verify e-mail address using this link: http://localhost:8080/verify?token="
+        msg = Message("Email address verification", sender="krauja03@gmail.com", recipients=[email])
+        msg.body = messageBody + verificationKey + " \n This link is valid for 2 weeks."
+        mail.send(msg)
+        print("e-pasts nosūtīts")
+        session["Message"] = "Check your e-mail! A verification link has been sent to you"
+    except Exception:
+        print("Neizdevās nosūtīt")
+    return
+
 @app.route("/", methods=["GET", "POST"])
 def home():
     return redirect(url_for('index'))
 
 @app.route("/ViesuSaraksts", methods=["GET", "POST"])
 def index():
-    mydb = mysql.connector.connect(
-        host="database",
-        port=3306,
-        user="root",
-        passwd="Kraujinieks123",
-        database="db"
-    )
+    mydb = connect_to_db()
     mycursor = mydb.cursor()
     if request.method == "GET":
         mycursor.execute("SELECT Autors, Komentars, Datums FROM Viesi")
@@ -74,13 +90,7 @@ def login():
             session.pop("Message", None)
         return render_template("loginPage.html", errors=errors, messages=messages)
 
-    mydb = mysql.connector.connect(
-        host="database",
-        port=3306,
-        user="root",
-        passwd="Kraujinieks123",
-        database="db"
-    )
+    mydb = connect_to_db()
     mycursor = mydb.cursor()
 
     username = request.form["username"]
@@ -116,13 +126,7 @@ def register():
     if request.method == "GET":
         return render_template("registerPage.html", errors=errors, messages=messages)
 
-    mydb = mysql.connector.connect(
-        host="database",
-        port=3306,
-        user="root",
-        passwd="Kraujinieks123",
-        database="db"
-    )
+    mydb = connect_to_db()
     mycursor = mydb.cursor()
 
     username = request.form["username"]
@@ -170,13 +174,7 @@ def logout():
 def verify():
     token = request.args.get('token')
     print(token)
-    mydb = mysql.connector.connect(
-        host="database",
-        port=3306,
-        user="root",
-        passwd="Kraujinieks123",
-        database="db"
-    )
+    mydb = connect_to_db()
     mycursor = mydb.cursor()
     sql = "SELECT validUntil, userId FROM VerificationTokens WHERE token = %s"
     mycursor.execute(sql, (token,))
@@ -212,19 +210,7 @@ def verify():
     return redirect(url_for('login'))
 
 
-def sendVerificationEmail(email, verificationKey):
-    try:
-        messageBody = "Verify e-mail address using this link: http://localhost:8080/verify?token="
-        msg = Message("Email address verification", sender="krauja03@gmail.com", recipients=[email])
-        msg.body = messageBody + verificationKey + " \n This link is valid for 2 weeks."
-        mail.send(msg)
-        print("e-pasts nosūtīts")
-        session["Message"] = "Check your e-mail! A verification link has been sent to you"
-    except Exception:
-        print("Neizdevās nosūtīt")
-    return
-
-
 if __name__ == "__main__":
     debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
     app.run(debug=debug_mode, host="0.0.0.0", port=8080, use_reloader=debug_mode)
+    
