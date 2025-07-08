@@ -13,6 +13,22 @@ jobs:
     steps:
     - name: checkout
       uses: actions/checkout@v4
+    
+    - name: 'Create env file'
+      run: |
+        cat > .env << EOF
+        SECRET_KEY=${{ secrets.SECRET_KEY }}
+        MAIL_SERVER=${{ secrets.MAIL_SERVER }}
+        MAIL_PORT=${{ secrets.MAIL_PORT }}
+        MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
+        MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
+        DATABASE_HOST=${{ secrets.DATABASE_HOST }}
+        DATABASE_ROOT_USERNAME=${{ secrets.DATABASE_ROOT_USERNAME }}
+        DATABASE_ROOT_PASSWORD=${{ secrets.DATABASE_ROOT_PASSWORD }}
+        DATABASE_PORT=${{ secrets.DATABASE_PORT }}
+        DATABASE_NAME=${{ secrets.DATABASE_NAME }}
+        EOF
+        cat .env
 
     - name: Build the Docker image
       run: docker compose build --no-cache
