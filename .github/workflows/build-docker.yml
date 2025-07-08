@@ -1,0 +1,40 @@
+name: Docker Image CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "master" ]
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4
+
+    - name: Build the Docker image
+      run: docker compose build --no-cache
+
+    - name: Run the Docker image
+      run: docker compose up -d
+
+    - name: Wait for container
+      uses: stringbean/docker-healthcheck-action@v1
+      with:
+        container: python_anywhere-web-1  
+        wait-time: 30
+        require-status: running
+        require-healthy: true
+    
+    - name: Ping webservice container
+      run: |
+        curl -f http://localhost:8080/login || exit 1
+    
+    - name: Stop services
+      run: docker compose down
+    
+    - name: Clean up
+      run: docker system prune -f
+
