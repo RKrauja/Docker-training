@@ -3,8 +3,8 @@
 /workspace.xml
 # Datasource local storage ignored files
 /dataSources/
-/loki/
 /grafana/
 /dataSources.local.xml
 .env
 .gitignore
+.exe
